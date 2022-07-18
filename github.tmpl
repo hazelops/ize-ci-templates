@@ -1,4 +1,4 @@
-name: "[{{ .env }}] Infra & Apps Deploy"
+name: "[{{ .Env }}] Infra & Apps Deploy"
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
@@ -8,10 +8,10 @@ defaults:
     shell: bash
 
 env:
-  AWS_REGION: {{ .aws_Region }}
-  ENV: {{ .aws_Region }}
-  SSH_PUBLIC_KEY: {{ .public_key }}
-  NAMESPACE: {{ .aws_Region }}
+  AWS_REGION: {{ .AwsRegion }}
+  ENV: {{ .AwsRegion }}
+  SSH_PUBLIC_KEY: {{ .PublicKey }}
+  NAMESPACE: {{ .AwsRegion }}
   AWS_PROFILE: gringaming-dev01
   IZE_LOG_LEVEL: debug
   IZE_PREFER_RUNTIME: docker
@@ -59,46 +59,46 @@ jobs:
         run: ize up infra
         shell: bash
 
- 
- {{ Range | ... }}
- {{ .name }}:
-    runs-on: ubuntu-latest
-    name: {{ .name }}
-    env:
-      TAG: "${{ github.sha }}"
-    needs: infra
 
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
-          aws-region: ${{ env.AWS_REGION }}
+ {{ range .Apps }}
+     {{ .Name }}:
+        runs-on: ubuntu-latest
+        name: {{ .Name }}
+        env:
+          TAG: "${{ github.sha }}"
+        needs: infra
 
-      - name: Checkout Code
-        uses: actions/checkout@v2
-        with:
-          submodules: true
+        steps:
+          - name: Configure AWS Credentials
+            uses: aws-actions/configure-aws-credentials@v1
+            with:
+              aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+              aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+              aws-region: ${{ env.AWS_REGION }}
 
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ env.SSH_PUBLIC_KEY }}
-          name: id_rsa.pub
-          known_hosts: unnecessary
-          if_key_exists: replace
+          - name: Checkout Code
+            uses: actions/checkout@v2
+            with:
+              submodules: true
 
-      - name: Create AWS Profile
-        run: ize gen aws-profile
-        shell: bash
+          - name: Install SSH key
+            uses: shimataro/ssh-key-action@v2
+            with:
+              key: ${{ env.SSH_PUBLIC_KEY }}
+              name: id_rsa.pub
+              known_hosts: unnecessary
+              if_key_exists: replace
 
-      - name: Ize Setup
-        uses: hazelops/action-setup-ize@0.0.1
-        with:
-          version: 1.0.0
+          - name: Create AWS Profile
+            run: ize gen aws-profile
+            shell: bash
 
-      - name: Deploy App
-        run: ize up ${{ github.job }}
-        shell: bash
-  {{ end }}
+          - name: Ize Setup
+            uses: hazelops/action-setup-ize@0.0.1
+            with:
+              version: 1.0.0
+
+          - name: Deploy App
+            run: ize up ${{ github.job }}
+            shell: bash
+ {{ end }}
