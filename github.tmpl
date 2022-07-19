@@ -9,9 +9,9 @@ defaults:
 
 env:
   AWS_REGION: {{ .AwsRegion }}
-  ENV: {{ .AwsRegion }}
+  ENV: {{ .Env }}
   SSH_PUBLIC_KEY: {{ .PublicKey }}
-  NAMESPACE: {{ .AwsRegion }}
+  NAMESPACE: {{ .Namespace }}
   AWS_PROFILE: gringaming-dev01
   IZE_LOG_LEVEL: debug
   IZE_PREFER_RUNTIME: docker
