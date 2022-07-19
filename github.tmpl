@@ -1,6 +1,6 @@
 name: "[{{ .Env }}] Infra & Apps Deploy"
 concurrency:
-  group: ${{ github.workflow }}
+  group: {{ print "${{ github.workflow }}" }}
   cancel-in-progress: false
 
 defaults:
@@ -23,15 +23,15 @@ jobs:
   infra:  # Create infrastructure for services on push to Develop branch
     runs-on: ubuntu-latest
     env:
-      TAG: "${{ github.sha }}"
+      TAG: {{ print `"${{ github.sha }}"` }}
 
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: {{ print "${{ secrets.AWS_ACCESS_KEY_ID_DEV }}" }}
+          aws-secret-access-key: {{ print "${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}" }}
+          aws-region: {{ print "${{ env.AWS_REGION }}" }}
 
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -41,7 +41,7 @@ jobs:
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
-          key: ${{ env.SSH_PUBLIC_KEY }}
+          key: {{ print "${{ env.SSH_PUBLIC_KEY }}" }}
           name: id_rsa.pub
           known_hosts: unnecessary
           if_key_exists: replace
@@ -65,16 +65,16 @@ jobs:
         runs-on: ubuntu-latest
         name: {{ $key }}
         env:
-          TAG: "${{ github.sha }}"
+          TAG: {{ print `"${{ github.sha }}"` }}
         needs: infra
 
         steps:
           - name: Configure AWS Credentials
             uses: aws-actions/configure-aws-credentials@v1
             with:
-              aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-              aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
-              aws-region: ${{ env.AWS_REGION }}
+              aws-access-key-id: {{ print "${{ secrets.AWS_ACCESS_KEY_ID_DEV }}" }}
+              aws-secret-access-key: {{ print "${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}" }}
+              aws-region: {{ print "${{ env.AWS_REGION }}" }}
 
           - name: Checkout Code
             uses: actions/checkout@v2
@@ -84,7 +84,7 @@ jobs:
           - name: Install SSH key
             uses: shimataro/ssh-key-action@v2
             with:
-              key: ${{ env.SSH_PUBLIC_KEY }}
+              key: {{ print "${{ env.SSH_PUBLIC_KEY }}" }}
               name: id_rsa.pub
               known_hosts: unnecessary
               if_key_exists: replace
@@ -99,6 +99,6 @@ jobs:
               version: 1.0.0
 
           - name: Deploy App
-            run: ize up ${{ github.job }}
+            run: ize up {{ print "${{ github.job }}" }}
             shell: bash
  {{ end }}
