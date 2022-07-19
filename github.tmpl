@@ -60,10 +60,10 @@ jobs:
         shell: bash
 
 
- {{ range .Apps }}
-     {{ .Name }}:
+{{ range $key, $value := .Apps }}
+     {{ $key }}:
         runs-on: ubuntu-latest
-        name: {{ .Name }}
+        name: {{ $key }}
         env:
           TAG: "${{ github.sha }}"
         needs: infra
